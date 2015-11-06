@@ -18,11 +18,26 @@
   <div id="map_canvas" style="width:100%; height:100%"></div>
 
   <script>
+ 
+    //make this real ajax when you go to prod, just an example
+    function loadSync(filePath, mimeType)
+    {
+      var xmlhttp=new XMLHttpRequest();
+      xmlhttp.open("GET",filePath,false);
+      if (mimeType != null && xmlhttp.overrideMimeType)
+          xmlhttp.overrideMimeType(mimeType);
+
+      xmlhttp.send();
+      if (xmlhttp.status!=200)
+        return null;
+      return xmlhttp.responseText;
+    }
+
     var options = { mapTypeId: google.maps.MapTypeId.ROADMAP };
     var map = new google.maps.Map(document.getElementById("map_canvas"), options);
     var dirService = new google.maps.DirectionsService();
 
-    var json_str = '[{ "origin": "40.720072, -74.045233", "destination": "40.718852, -74.045898", "text": "closing1" }, { "origin": "40.71905, -74.043095", "destination": "40.717548, -74.044103", "text": "closing2" }]';
+    var json_str = loadSync("test.json", "application/json");
     var parsed_json = JSON.parse(json_str);
 
     requests = [ ];
