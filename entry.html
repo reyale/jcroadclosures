@@ -3,7 +3,9 @@
 <head>
  <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
  <meta content="utf-8" http-equiv="encoding">
-
+  
+ <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+ <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
  <script type="text/javascript" src="http://maps.google.com/maps/api/js"></script>
  <style type="text/css">
    html { height: 100% }
@@ -17,17 +19,15 @@
 
   <div id="map_canvas" style="width:100%; height:75%"></div>
 
-  <!--
-    //date selector
-    //comment selector
-    //display currently rendered data
-   --!>
-
   <center>
-  <p><button type="button">Submit</button> <button type="button" onclick="clearMap()">Clear</button></p>
+  <p>Comment: <textarea rows="4" cols="50" id="comment"></textarea></p>
+  <p>Date: <input type="text" id="datepicker"></p>
+  <p><button type="button" onclick="onSubmit()">Submit</button> <button type="button" onclick="clearMap()">Clear</button></p>
   </center>
 
   <script>
+
+    $( "#datepicker" ).datepicker();
 
     var options = { mapTypeId: google.maps.MapTypeId.ROADMAP,
       center: new google.maps.LatLng(40.7201813,-74.078644),
@@ -77,6 +77,7 @@
 
             res['renderer'] = renderer;
             res['route'] = response;
+            start = null;
           }
 
           routes.push(res);
@@ -92,6 +93,51 @@
       }
       routes = [ ];
       start = null;
+    }
+
+    function onSubmit() {
+      var comment = document.getElementById('comment').value;
+      if(comment.length < 10) {
+        alert("Please proviide a more substantial comment (more than 10 chars)")
+        return;
+      }
+
+      var dp_date = $( "#datepicker" ).datepicker("getDate");
+      if(dp_date == null) {
+        alert("Please select a date");
+        return;
+      }
+    
+      if(routes.length <= 1) { //start at 1 because the first one is a dummy
+        alert("Please add some routes to the map"); 
+        return;
+      } 
+    
+      //console.log(routes);
+
+      var to_send = [ ];
+      for(var i = 0; i < routes.length; i++) {
+        //console.log(routes[i]);
+        if(routes[i]['route'] == null) {
+          continue;
+        }
+        var response = routes[i]['route'];
+
+        //date, origin, destination, text, comment
+        var data = { };
+        var origin = response.routes[0].legs[0].start_location.lat() + "," + response.routes[0].legs[0].start_location.lng();
+        var destination = response.routes[0].legs[0].end_location.lat() + "," + response.routes[0].legs[0].end_location.lng();
+        data['origin'] = origin; 
+        data['destination'] = destination;
+        data['comment'] = comment;
+        data['date'] = dp_date;
+        to_send.push(data);
+      }
+      // construct an HTTP request
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "add", true);
+      xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+      xhr.send(JSON.stringify(to_send));
     }
 
   </script>

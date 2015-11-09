@@ -45,8 +45,12 @@ class Closings:
     c = self.conn.cursor()
     return c.execute("SELECT * FROM closings WHERE date='%s' and active=1" % date) 
 
+  def get_all(self):
+    c = self.conn.cursor() 
+    return c.execute("SELECT * FROM closings")
+
 #c = Closings()
 #c.add("40.720072, -74.045233", "40.718852, -74.045898", "20150101", "test closing 1")
 #c.add("40.71905, -74.043095", "40.717548, -74.044103", "20150101", "test closing 2")
-#for d in c.get('20150101'):
-  #print d
+#for d in c.get('20151118'):
+#  print d
